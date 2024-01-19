@@ -20,6 +20,7 @@ def get_recent_obs(days: int) -> list:
     params = {'back': days} #Specifies number of days to retrieve data for
     response = requests.get(url, headers = headers, params = params)
     data = response.json()
+    print(data)
     return data
 
 def connect_to_table():
@@ -28,29 +29,31 @@ def connect_to_table():
     table = dynamodb.Table(table_name)
     return table
 
-def batch_write_data(data: list, table) -> None:
+def batch_write_recent_obs(data: list, table) -> None:
+
+    keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
+
     with table.batch_writer() as writer:
         for item in data:
-            writer.put_item(
-                Item={
-                'speciesCode': item['speciesCode'],
-                'obsDt': item['obsDt'],
-                'comName': item['comName'],
-                'sciName': item['sciName'],
-                'locId': item['locId'],
-                'locName': item['locName'],
-                'howMany': item['howMany'], 
-                'lat': str(item['lat']),  # Lat/Long converted to string because DDB doesn't handle floats
-                'lng': str(item['lng']),  
-                'obsValid': item['obsValid'],
-                'obsReviewed': item['obsReviewed'],
-                'locationPrivate': item['locationPrivate'],
-                'subId': item['subId'],
-                }
-                )
+            dynamo_item = {}
 
-#if __name__ == "__main__":
-    #data = get_recent_obs()
-    #table = connect_to_table()
-    #batch_write_data(data, table)
+        # Iterate through the keys and add them to the dynamo_item if they exist in the item dictionary
+            for key in keys_to_include:
+                if key in item:
+                # Convert lat and lng to strings
+                    value = str(item[key]) if key in ['lat', 'lng'] else item[key]
+                    dynamo_item[key] = value
+
+        # Perform the put_item operation with the constructed dynamo_item for the current item
+            writer.put_item(
+                Item=dynamo_item
+            )
+
+def update_recent_obs(data, table):
+
+
+if __name__ == "__main__":
+    data = get_recent_obs(1)
+    table = connect_to_table()
+    batch_write_recent_obs(data, table)
 
