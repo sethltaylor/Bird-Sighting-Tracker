@@ -29,7 +29,7 @@ def connect_to_table():
     table = dynamodb.Table(table_name)
     return table
 
-def batch_write_recent_obs(data: list, table) -> None:
+def batch_write_obs(data: list, table) -> None:
 
     keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
 
@@ -50,10 +50,26 @@ def batch_write_recent_obs(data: list, table) -> None:
             )
 
 def update_recent_obs(data, table):
+    keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
+    
+    for item in data:
+        dynamo_item = {}
+        for key in keys_to_include:
+            if key in item:
+                    # Convert lat and lng to strings
+                value = str(item[key]) if key in ['lat', 'lng'] else item[key]
+                dynamo_item[key] = value
 
+    
+        table.update_item(
+            Key ={
+                'subId': item['subId'],
+                'speciesCode': item['speciesCode'] #Not complete. Read boto3 doc
+            }
+        )
 
 if __name__ == "__main__":
     data = get_recent_obs(1)
     table = connect_to_table()
-    batch_write_recent_obs(data, table)
+    batch_write_obs(data, table)
 

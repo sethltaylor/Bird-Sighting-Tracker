@@ -18,16 +18,18 @@ resource "aws_dynamodb_table" "recent_observation_table" {
     billing_mode = "PROVISIONED"
     read_capacity = var.recent_observation_table_read_capacity
     write_capacity = var.recent_observation_table_write_capacity
-    hash_key = "speciesCode"
-    range_key = "obsDt"
+    hash_key = "subId"
+    range_key = "speciesCode"
 
-    attribute {
-        name = "speciesCode"
+ 
+
+    attribute{
+        name = "subId"
         type = "S"
     }
 
-    attribute{
-        name = "obsDt"
+    attribute {
+        name = "speciesCode"
         type = "S"
     }
 
