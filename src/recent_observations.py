@@ -11,16 +11,36 @@ def api_setup():
 
     return headers
 
-def get_recent_obs(days: int) -> list:
+def get_regions(region_type: str, parent_codes: list) -> list:
+    """This function returns a list of eBird regions for a specified region type (country, subnational1, subnational2)
+       and a list of parent region codes (e.g., 'US' or 'US-VA')"""
+    
+    header = api_setup()
+    params = {'fmt':'json'}
+    region_codes = []
+    for code in parent_codes:
+        url = f"https://api.ebird.org/v2/ref/region/list/{region_type}/{code}"
+        response = requests.get(url, headers = header, params=params)
+        sub_codes = [item['code'] for item in response.json()]
+        region_codes.extend(sub_codes)
+    
+    return region_codes
+    
 
-    """Function to get the most recent observations for the US going back a number of specified days"""
+def get_recent_obs(days: int, region_codes: list) -> list:
+
+    """Function to get the most recent observations for a set of  going back a number of specified days"""
     headers = api_setup()
+    params = {'back': days}  #Specifies number of days to retrieve data for
 
-    url = 'https://api.ebird.org/v2/data/obs/US/recent'
-    params = {'back': days} #Specifies number of days to retrieve data for
-    response = requests.get(url, headers = headers, params = params)
-    data = response.json()
-    print(len(data))
+    data = []
+    for code in region_codes:
+        url = f"https://api.ebird.org/v2/data/obs/{code}/recent"
+        response = requests.get(url, headers = headers, params = params)
+        data.extend(response.json())
+        print(f"Retrieved data for {code}")
+
+    print(data) 
     return data
 
 def connect_to_table():
@@ -50,6 +70,8 @@ def batch_write_obs(data: list, table) -> None:
             writer.put_item(
                 Item=dynamo_item
             )
+        
+            print(f"Wrote {len(data)} items to table.")
 
 def update_recent_obs(data: list, table) -> None:
     keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
@@ -71,7 +93,6 @@ def update_recent_obs(data: list, table) -> None:
         )
 
 if __name__ == "__main__":
-    data = get_recent_obs(30)
-    table = connect_to_table()
-    batch_write_obs(data, table)
+    regions = get_regions('subnational2', ['US-VA','US-MD','US-DC'])
+    get_recent_obs(1, regions)
 
