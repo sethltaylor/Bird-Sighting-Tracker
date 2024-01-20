@@ -62,7 +62,7 @@ def connect_to_table():
 def batch_write_obs(data: list, table) -> None:
     """Function to batch write items to the DDB table, which is more efficient from a read/write perspective than just put_item"""
 
-    keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
+    keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'subId']
 
     with table.batch_writer() as writer:
         for item in data:
@@ -83,7 +83,7 @@ def batch_write_obs(data: list, table) -> None:
         print(f"Wrote {len(data)} items to table.")
 
 def update_recent_obs(data: list, table) -> None:
-    keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
+    keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'subId']
     
     for item in data:
         dynamo_item = {}
