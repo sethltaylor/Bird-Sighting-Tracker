@@ -20,16 +20,18 @@ def get_recent_obs(days: int) -> list:
     params = {'back': days} #Specifies number of days to retrieve data for
     response = requests.get(url, headers = headers, params = params)
     data = response.json()
-    print(data)
+    print(len(data))
     return data
 
 def connect_to_table():
+    """Function to establish connection to the DDB table"""
     dynamodb = boto3.resource('dynamodb') #boto3 should check env for access keys automatically
     table_name = 'RecentObservations'
     table = dynamodb.Table(table_name)
     return table
 
 def batch_write_obs(data: list, table) -> None:
+    """Function to batch write items to the DDB table, which is more efficient from a read/write perspective than just put_item"""
 
     keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
 
@@ -37,19 +39,19 @@ def batch_write_obs(data: list, table) -> None:
         for item in data:
             dynamo_item = {}
 
-        # Iterate through the keys and add them to the dynamo_item if they exist in the item dictionary
+        # Iterate through the keys and add them to the dynamo_item if they exist
             for key in keys_to_include:
                 if key in item:
                 # Convert lat and lng to strings
                     value = str(item[key]) if key in ['lat', 'lng'] else item[key]
                     dynamo_item[key] = value
 
-        # Perform the put_item operation with the constructed dynamo_item for the current item
+        # Write the item to the DDB table 
             writer.put_item(
                 Item=dynamo_item
             )
 
-def update_recent_obs(data, table):
+def update_recent_obs(data: list, table) -> None:
     keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
     
     for item in data:
@@ -69,7 +71,7 @@ def update_recent_obs(data, table):
         )
 
 if __name__ == "__main__":
-    data = get_recent_obs(1)
+    data = get_recent_obs(30)
     table = connect_to_table()
     batch_write_obs(data, table)
 
