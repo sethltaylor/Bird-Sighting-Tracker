@@ -1,6 +1,7 @@
 import os
 import requests
 import boto3
+import concurrent.futures
 
 def api_setup():
 
@@ -28,20 +29,28 @@ def get_regions(region_type: str, parent_codes: list) -> list:
     
 
 def get_recent_obs(days: int, region_codes: list) -> list:
-
-    """Function to get the most recent observations for a set of  going back a number of specified days"""
+    """Function to get the most recent observations for a set of regions going back a number of specified days"""
     headers = api_setup()
-    params = {'back': days}  #Specifies number of days to retrieve data for
+    params = {'back': days}  # Specifies number of days to retrieve data for
 
-    data = []
-    for code in region_codes:
-        url = f"https://api.ebird.org/v2/data/obs/{code}/recent"
-        response = requests.get(url, headers = headers, params = params)
-        data.extend(response.json())
-        print(f"Retrieved data for {code}")
+    # Use a session for connection pooling
+    with requests.Session() as session:
+        session.headers.update(headers)
 
-    print(data) 
-    return data
+        def fetch_data(code):
+            url = f"https://api.ebird.org/v2/data/obs/{code}/recent"
+            response = session.get(url, params=params)
+            return response.json()
+
+        #Concurrently executing API requests 
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = executor.map(fetch_data, region_codes)
+
+        #Iterate over each JSON response and each entry in a response to construct a list of responses
+        data = [entry for result in results for entry in result]
+       
+        return data
+
 
 def connect_to_table():
     """Function to establish connection to the DDB table"""
@@ -71,7 +80,7 @@ def batch_write_obs(data: list, table) -> None:
                 Item=dynamo_item
             )
         
-            print(f"Wrote {len(data)} items to table.")
+        print(f"Wrote {len(data)} items to table.")
 
 def update_recent_obs(data: list, table) -> None:
     keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'obsValid', 'obsReviewed', 'locationPrivate', 'subId']
