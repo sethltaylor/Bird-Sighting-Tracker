@@ -23,9 +23,10 @@ resource "aws_dynamodb_table" "recent_observation_table" {
         enabled = true 
     }
 
-    lifecycle {
-    ignore_changes = [read_capacity, write_capacity] #This policy is defined because future terraform apply would otherwise overwrite AWS autoscaling
-  }
+    ##Removed for now because we aren't using autoscaling during testing. 
+   # lifecycle {
+    #ignore_changes = [read_capacity, write_capacity] #This policy is defined because future terraform apply would otherwise overwrite AWS autoscaling
+  #}
 }
 
 ### Removing autoscalling policies for now because reading/write testing is infrequent so policy always sets capacity to 1. 
