@@ -6,6 +6,6 @@ resource "aws_lambda_function" "recent_observations" {
         role          = aws_iam_role.lambda_execution_role.arn
         runtime       = "python3.10"
         handler       = "recent_observations_lambda.lambda_handler"
-        timeout       = 10
+        timeout       = 600
         depends_on = [ aws_s3_object.lambda_zip ]
 }
