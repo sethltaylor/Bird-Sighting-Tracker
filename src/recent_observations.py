@@ -56,8 +56,14 @@ def add_ttl(data: list) -> list:
     """This function adds a time to live attribute to each observation based on the observation date + 30 days"""
     data_with_ttl = []
     for entry in data:
-        obs_timestamp = time.mktime(time.strptime(entry['obsDt'], "%Y-%m-%d %H:%M"))
-        ttl_timestamp = int(obs_timestamp + (30*24*60*60)) #Add 30 days in seconds. TTL is in epoch time. 30 days * 24 hours * 60 minutes * 60 seconds
+        try:
+            # Try parsing with hours and minutes
+            obs_timestamp = time.mktime(time.strptime(entry['obsDt'], "%Y-%m-%d %H:%M"))
+        except ValueError:
+            # If parsing fails, try parsing without hours and minutes
+            obs_timestamp = time.mktime(time.strptime(entry['obsDt'], "%Y-%m-%d"))
+            
+        ttl_timestamp = int(obs_timestamp + (30 * 24 * 60 * 60))  # Add 30 days in seconds. TTL is in epoch time.
         entry['ttl'] = ttl_timestamp
 
         data_with_ttl.append(entry)
