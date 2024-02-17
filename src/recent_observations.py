@@ -3,6 +3,8 @@ import requests
 import boto3
 import time
 import concurrent.futures
+import io
+import csv
 
 def api_setup():
 
@@ -51,6 +53,25 @@ def get_recent_obs(days: int, region_codes: list) -> list:
         data = [entry for result in results for entry in result]
        
         return data
+    
+def key_to_s3(data):
+    """This function retrieves all the unique values for species code and common name and stores them in s3 to later support filtering in the web app."""
+
+    #Creating a set to keep only unique values of keys
+    species_info = set()
+
+    for item in data:
+        #Retrieve only complete entries
+        if 'speciesCode' in item and 'comName' in item:
+            species_info.add((item['speciesCode'], item['comName']))
+
+    with io.StringIO() as csv_output:
+        csv_writer = csv.writer(csv_output)
+        csv_writer.writerow(['speciesCode', 'comName']) #Writing header first
+        csv_writer.writerows(species_info)
+        csv_content = csv_output.getvalue()
+
+
 
 def add_ttl(data: list) -> list:
     """This function adds a time to live attribute to each observation based on the observation date + 30 days"""
@@ -121,5 +142,6 @@ def batch_write_obs(data: list, table) -> None:
 
 if __name__ == "__main__":
     regions = get_regions('subnational2', ['US-VA','US-MD','US-DC'])
-    get_recent_obs(1, regions)
+    data = get_recent_obs(1, regions)
+    key_to_s3(data)
 
