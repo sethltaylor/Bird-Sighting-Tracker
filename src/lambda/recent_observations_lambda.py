@@ -2,6 +2,8 @@ import requests
 import boto3
 import time
 import concurrent.futures
+from io import StringIO
+import csv
 
 def api_setup():
 

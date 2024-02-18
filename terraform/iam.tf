@@ -21,6 +21,12 @@ data "aws_iam_policy_document" "lambda_execution_policy"{
     actions = ["dynamodb:BatchWriteItem"]
     resources = [aws_dynamodb_table.recent_observation_table.arn]
   }
+
+  statement {
+    effect = "Allow"
+    actions = ["s3:GetObject", "s3:PutObject"]
+    resources = ["${aws_s3_bucket.recent_obs_keys_bucket.arn}/*"]
+  }
 }
 
 resource "aws_iam_role" "lambda_execution_role" {  

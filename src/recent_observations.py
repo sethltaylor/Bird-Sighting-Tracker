@@ -170,5 +170,5 @@ def batch_write_obs(data: list, table) -> None:
 if __name__ == "__main__":
     regions = get_regions('subnational2', ['US-VA','US-MD','US-DC'])
     data = get_recent_obs(1, regions)
-    key_to_s3(data)
+    keys_to_s3(data)
 
