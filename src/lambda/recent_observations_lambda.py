@@ -2,6 +2,8 @@ import requests
 import boto3
 import time
 import concurrent.futures
+from io import StringIO
+import csv
 
 def api_setup():
 
@@ -52,6 +54,52 @@ def get_recent_obs(days: int, region_codes: list) -> list:
         data = [entry for result in results for entry in result]
        
         return data
+
+def keys_to_s3(data):
+    """This function retrieves all the unique values for species code and common name and stores them in s3 to later support filtering in the web app."""
+
+    #Creating a set to keep only unique values of keys
+    species_info = set()
+
+    for item in data:
+        #Retrieve only complete entries
+        if 'speciesCode' in item and 'comName' in item:
+            species_info.add((item['speciesCode'], item['comName']))
+
+    #Create connection to s3
+    s3 = boto3.client('s3')
+    bucket_name = 'recent-observations-keys'
+    file_name = 'recent_observation_keys.csv'
+
+    headers = ['speciesCode', 'comName']
+
+    #Retrieve keys from s3 if they exist. Otherwise start a set and add the column headers. 
+    try:
+        response = s3.get_object(Bucket = bucket_name, Key = file_name)
+        existing_data = response['Body'].read().decode('utf-8-sig')
+        reader = csv.reader(StringIO(existing_data))
+        existing_keys = set(tuple(row) for row in reader if row != headers)
+
+    except s3.exceptions.NoSuchKey:
+        existing_keys = set()
+    
+    if not existing_keys:
+        existing_keys.add(tuple(headers))
+
+    #Union new keys with old keys and reappend headers
+    updated_keys = existing_keys.union(species_info)
+
+    updated_keys = sorted(list(updated_keys))
+
+    updated_keys.insert(0, tuple(headers))
+
+    #Write keys to a csv and send to s3
+    with StringIO() as csv_output:
+        csv_writer = csv.writer(csv_output)
+        csv_writer.writerows(updated_keys)
+        csv_content = csv_output.getvalue()
+
+    s3.put_object(Bucket = bucket_name, Key = file_name, Body = csv_content, ContentType = 'text/csv')
 
 def add_ttl(data: list) -> list:
     """This function adds a time to live attribute to each observation based on the observation date + 30 days"""
@@ -104,6 +152,7 @@ def batch_write_obs(data: list, table) -> None:
 def lambda_handler(event, context):
     regions = get_regions('subnational2', ['US-VA', 'US-MD', 'US-DC'])
     data = get_recent_obs(1, regions)
+    keys_to_s3(data)
     data_ttl = add_ttl(data)
     table = connect_to_table()
     batch_write_obs(data_ttl, table)
