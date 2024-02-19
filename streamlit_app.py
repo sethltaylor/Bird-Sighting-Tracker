@@ -52,12 +52,13 @@ end_date_str = end_date_selection.strftime('%Y-%m-%d')
 if st.button('Show Sightings'):
     filtered_df = query_bird_sightings(common_name_selection, start_date_str, end_date_str)
 
-    #Perform data cleaning/converstion
-    filtered_df = filtered_df.astype({'lng':'float', 'lat':'float'})
-    filtered_df['howMany'] = pd.to_numeric(filtered_df['howMany'], errors = 'coerce')
-    filtered_df['howMany'].fillna(1, inplace= True)
-
     if not filtered_df.empty:
+        #Perform data cleaning/converstion
+        filtered_df = filtered_df.astype({'lng':'float', 'lat':'float'})
+        filtered_df['howMany'] = pd.to_numeric(filtered_df['howMany'], errors = 'coerce')
+        filtered_df['howMany'].fillna(1, inplace= True)
+
+        #Create mapping dictionary 
         data_dict = filtered_df[['lat', 'lng', 'locName', 'howMany']].to_dict(orient='records')
 
         # Pydeck map
@@ -86,14 +87,21 @@ if st.button('Show Sightings'):
                 "style": {
                     "backgroundColor": "steelblue",
                     "color": "white"
-   }
-}
-        )
+                    }
+                }
+            )
 
         st.pydeck_chart(deck)
     
-    #Calculate average number of sightings
-    st.subheader(f"Total number of {common_name_selection} sighted between {start_date_str} and {end_date_str}")
-    st.write(round(filtered_df['howMany'].sum()))
+        #Calculate average number of sightings
+        st.subheader(f"Total number of {common_name_selection} sighted between {start_date_str} and {end_date_str}")
+        st.write(round(filtered_df['howMany'].sum()))
 
-    st.dataframe(filtered_df)
+        st.dataframe(filtered_df)
+
+    else:
+        st.write(f"No {common_name_selection} were sighted between {start_date_str} and {end_date_str}.")
+
+
+
+
