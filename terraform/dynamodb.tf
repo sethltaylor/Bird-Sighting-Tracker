@@ -18,9 +18,28 @@ resource "aws_dynamodb_table" "recent_observation_table" {
         type = "S"
     }
 
+    attribute {
+      name = "comName"
+      type = "S"
+    }
+
+    attribute {
+      name = "obsDt"
+      type = "S"
+    }
+    
     ttl {
         attribute_name = "ttl"
         enabled = true 
+    }
+
+    global_secondary_index {
+      name = "comName-obsDt-index"
+      hash_key = "comName"
+      range_key = "obsDt"
+      projection_type = "ALL"
+      read_capacity = var.recent_observation_table_read_capacity
+      write_capacity = var.recent_observation_table_write_capacity
     }
 
     ##Removed for now because we aren't using autoscaling during testing. 
