@@ -4,7 +4,9 @@ import boto3
 import pydeck as pdk
 from datetime import datetime
 
-st.set_page_config(layout="wide", page_title = "Bird Sightings in DC, Maryland, and Virginia", page_icon= ":bird:")
+st.set_page_config(layout="wide", page_title = "Bird Sightings in DC, Maryland, and Virginia", page_icon= ":bird:",  menu_items={
+        'Report a bug': "https://github.com/sethltaylor/Bird-Sighting-Tracker/issues"}
+)
 
 #Functions to get data
 def query_bird_sightings(common_name_selection, start_date_str, end_date_str):
@@ -84,7 +86,7 @@ with tab1:
                 data_dict,
                 get_position="[lng, lat]",
                 get_color="[200, 30, 0, 160]",
-                get_radius=2000,
+                get_radius=2500,
                 pickable=True,
             )
 
@@ -111,22 +113,32 @@ with tab1:
             st.pydeck_chart(deck)
         
             #Calculate average number of sightings
-            st.subheader(f"Total number of {common_name_selection} sighted between {start_date_str} and {end_date_str}")
-            st.write(round(filtered_df['howMany'].sum()))
+            st.write(f"The total number of {common_name_selection} sighted between {start_date_selection} and {end_date_selection} was {round(filtered_df['howMany'].sum())}.")
+            
+            st.divider()
 
-            st.dataframe(filtered_df)
-
+            st.subheader('Sighting Information')
+            #Create dataframe with just relevant information
+            info_df =  filtered_df[['locName', 'howMany', 'obsDt']].rename(columns={
+                'locName': 'Location Name',
+                'howMany': 'Number Sighted',
+                'obsDt': 'Observation Date'
+            })
+            st.dataframe(info_df.sort_values(by='Observation Date', ascending = False))
         else:
-            st.write(f"No {common_name_selection} were sighted between {start_date_str} and {end_date_str}.")
+            st.write(f"No {common_name_selection} were reported between {start_date_selection} and {end_date_selection}.")
 
 with tab2:
     st.title("About")
-    st.write("This app is developed by Seth Taylor.")
+    st.write("This app is developed by Seth Taylor as a project to practice data engineering skills. This app is backed by a pipeline costing of AWS Lambda, DynamoDB, and S3. The app is hosted with AWS's Elastic Container Service. A more detailed overview is included in the Github repository below.")
     st.markdown("""
         <a href="https://www.linkedin.com/in/seth-taylor-3106486b/" target="_blank">
             <img src="https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg" width="30" height="30" style="margin-right: 10px;">LinkedIn Profile
         </a><br>
         <a href="https://github.com/sethltaylor" target="_blank">
             <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/brands/github.svg" width="30" height="30" style="margin-right: 10px;">GitHub Profile
+        </a><br>
+        <a href="https://github.com/sethltaylor/Bird-Sighting-Tracker" target="_blank">
+        <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/brands/github.svg" width="30" height="30" style="margin-right: 10px;">Project Repository
         </a>
         """, unsafe_allow_html=True)
