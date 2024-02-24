@@ -1,0 +1,1 @@
+echo ECS_CLUSTER=bird-tracker-cluster >> /etc/ecs/ecs.config
