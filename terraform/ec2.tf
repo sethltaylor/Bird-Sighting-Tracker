@@ -24,7 +24,11 @@ resource "aws_launch_template" "ecs_lt" {
    }
  }
 
- user_data = filebase64("${path.module}/ecs.sh")
+   user_data = base64encode(<<-EOF
+              #!/bin/bash
+              echo ECS_CLUSTER=${aws_ecs_cluster.bird_tracker_cluster.name} >> /etc/ecs/ecs.config
+              EOF
+  )
 }
 
 resource "aws_autoscaling_group" "ecs_asg" {

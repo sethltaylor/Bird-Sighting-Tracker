@@ -40,6 +40,16 @@ resource "aws_route_table_association" "public_subnet_association" {
     route_table_id = aws_route_table.second_rt.id
 }
 
+resource "aws_vpc_endpoint" "ecs" {
+    vpc_id = aws_vpc.main.id
+    service_name = "com.amazonaws.us-east-1.ecs"
+    vpc_endpoint_type = "Interface"
+
+    subnet_ids = [ aws_subnet.public_subnet[0].id, aws_subnet.public_subnet[1].id ]
+
+    security_group_ids = [aws_security_group.bird_tracker_sg_tf.id]
+}
+
 resource "aws_security_group" "bird_tracker_sg_tf" {
   name = "bird-tracker-sg-tf"
   description = "Allow traffic in and out of public subnet."
@@ -58,6 +68,13 @@ resource "aws_security_group" "bird_tracker_sg_tf" {
         to_port = 80
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = [ "0.0.0.0/0" ]
     }
 
     egress {

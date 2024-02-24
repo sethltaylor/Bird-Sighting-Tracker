@@ -7,7 +7,7 @@ resource "aws_ecs_cluster" "bird_tracker_cluster" {
 }
 
 resource "aws_ecs_task_definition" "bird_tracker_task" {
-    family = "bird-tracker-app"
+    family = "bird-tracker"
     network_mode = "awsvpc"
     runtime_platform {
       operating_system_family = "LINUX"
@@ -16,7 +16,7 @@ resource "aws_ecs_task_definition" "bird_tracker_task" {
     requires_compatibilities = [ "EC2" ]
     container_definitions = jsonencode([
         {
-            name = "bird-tracker-app"
+            name = "bird-tracker"
             image = "${aws_ecrpublic_repository.bird_tracker_repo.repository_uri}"
             cpu = 1
             memory = 3
@@ -46,6 +46,10 @@ resource "aws_ecs_service" "bird_tracker_service" {
     }
 
     force_new_deployment = true 
+
+    triggers = {
+        redeployment = timestamp()
+    }
 }
 
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
@@ -79,7 +83,7 @@ resource "aws_alb" "ecs_alb" {
 
 resource "aws_alb_target_group" "target_group" {
     name = "bird-tracker-target-group"
-    port = 8501
+    port = 80
     protocol = "HTTP"
     target_type = "ip"
     vpc_id = aws_vpc.main.id
