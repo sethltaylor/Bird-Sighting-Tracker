@@ -1,8 +1,8 @@
 resource "aws_dynamodb_table" "recent_observation_table" {
     name = "RecentObservations"
     billing_mode = "PROVISIONED"
-    read_capacity = var.recent_observation_table_read_capacity
-    write_capacity = var.recent_observation_table_write_capacity
+    read_capacity = 5
+    write_capacity = 24
     hash_key = "subId"
     range_key = "speciesCode"
 
@@ -38,8 +38,8 @@ resource "aws_dynamodb_table" "recent_observation_table" {
       hash_key = "comName"
       range_key = "obsDt"
       projection_type = "ALL"
-      read_capacity = var.recent_observation_table_read_capacity
-      write_capacity = var.recent_observation_table_write_capacity
+      read_capacity = 20
+      write_capacity = 1
     }
 
     ##Removed for now because we aren't using autoscaling during testing. 

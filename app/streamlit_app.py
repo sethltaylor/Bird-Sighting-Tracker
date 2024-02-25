@@ -124,7 +124,7 @@ with tab1:
                 'howMany': 'Number Sighted',
                 'obsDt': 'Observation Date'
             })
-            st.dataframe(info_df.sort_values(by='Observation Date', ascending = False))
+            st.dataframe(info_df.sort_values(by='Observation Date', ascending = False, use_container_width = True))
         else:
             st.write(f"No {common_name_selection} were reported between {start_date_selection} and {end_date_selection}.")
 
