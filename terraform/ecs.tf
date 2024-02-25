@@ -13,14 +13,20 @@ resource "aws_ecs_task_definition" "bird_tracker_task" {
         {
             name = "bird-tracker"
             image = "${aws_ecrpublic_repository.bird_tracker_repo.repository_uri}"
-            cpu = 256
-            memory = 512
+            cpu = 700
+            memory = 700
             essential = true
             portMappings = [
                 {
                 containerPort = 8501
                 hostPort = 8501
                 protocol = "tcp"
+                }
+            ]
+            environment = [
+                {
+                    name = "AWS_DEFAULT_REGION"
+                    value = "us-east-1"
                 }
             ]
         }
