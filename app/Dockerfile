@@ -2,8 +2,8 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY ./requirements.txt /app/requirements.txt
-COPY ./streamlit_app.py /app/streamlit_app.py
+COPY ./app/requirements.txt /app/requirements.txt
+COPY ./app/streamlit_app.py /app/streamlit_app.py
 
 RUN apt-get update && apt-get install -y curl && pip3 install -r /app/requirements.txt
 
