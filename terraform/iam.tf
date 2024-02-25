@@ -79,8 +79,10 @@ data "aws_iam_policy_document" "bird_tracker_task_role_policy"{
   statement {
     effect = "Allow"
     actions = ["dynamodb:*"]
-    resources = [aws_dynamodb_table.recent_observation_table.arn]
+    resources = [ aws_dynamodb_table.recent_observation_table.arn,
+      "${aws_dynamodb_table.recent_observation_table.arn}/index/comName-obsDt-index"]
   }
+
 
   statement {
     effect = "Allow"
@@ -98,4 +100,35 @@ resource "aws_iam_policy" "bird_tracker_task_policy" {
   name = "bird_tracker_task_policy"  
   description= "Permissions for S3 and DynamoDb"
   policy = data.aws_iam_policy_document.bird_tracker_task_role_policy.json
+}
+
+#ECS EC2 Role
+
+resource "aws_iam_instance_profile" "ecs" {
+  name = "ecs-ec2-cluster"
+  role = aws_iam_role.ecs.name
+}
+
+resource "aws_iam_role" "ecs" {
+  name               = "ecs-ec2-role"
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_attach" {
+  role       = aws_iam_role.ecs.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }

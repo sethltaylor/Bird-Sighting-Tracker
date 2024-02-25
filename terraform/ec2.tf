@@ -1,50 +1,22 @@
-resource "aws_launch_template" "ecs_lt" {
- name_prefix   = "ecs-template"
- image_id      = "ami-0440d3b780d96b29d"
- instance_type = "t2.micro"
+resource "aws_launch_configuration" "ecs_launch_config" {
+  image_id                    = "ami-0fda8ddbf744d1fd4"
+  iam_instance_profile        = aws_iam_instance_profile.ecs.arn
+  security_groups             = [aws_security_group.bird_tracker_sg_tf.id]
 
- key_name               = "ec2ecskey"
- vpc_security_group_ids = [aws_security_group.bird_tracker_sg_tf.id]
- iam_instance_profile {
-   name = "ecsInstanceRole"
- }
-
- block_device_mappings {
-   device_name = "/dev/xvda"
-   ebs {
-     volume_size = 30
-     volume_type = "gp3"
-   }
- }
-
- tag_specifications {
-   resource_type = "instance"
-   tags = {
-     Name = "ecs-instance"
-   }
- }
-
-   user_data = base64encode(<<-EOF
-              #!/bin/bash
-              echo ECS_CLUSTER=${aws_ecs_cluster.bird_tracker_cluster.name} >> /etc/ecs/ecs.config
-              EOF
-  )
+  user_data                   = "#!/bin/bash\necho ECS_CLUSTER=bird-tracker-cluster >> /etc/ecs/ecs.config"
+  instance_type               = "t2.micro"
+  associate_public_ip_address = true
+  key_name = "ec2ecskey"
 }
 
 resource "aws_autoscaling_group" "ecs_asg" {
+    name = "ECS EC2 ASG - Bird Tracker"
     vpc_zone_identifier = [aws_subnet.public_subnet[0].id, aws_subnet.public_subnet[1].id]
-    desired_capacity = 1
-    max_size = 1
-    min_size = 1
+    launch_configuration = aws_launch_configuration.ecs_launch_config.name
 
-    launch_template {
-      id = aws_launch_template.ecs_lt.id
-      version = "$Latest"
-    }
-
-    tag {
-        key = "AmazonECSManaged"
-        value = true
-        propagate_at_launch = true
-    }
+    desired_capacity          = 1
+    min_size                  = 1
+    max_size                  = 1
+    health_check_grace_period = 300
+    health_check_type         = "EC2"
 }
