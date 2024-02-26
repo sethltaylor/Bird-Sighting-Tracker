@@ -111,7 +111,7 @@ def add_ttl(data: list) -> list:
             # If parsing fails, try parsing without hours and minutes
             obs_timestamp = time.mktime(time.strptime(entry['obsDt'], "%Y-%m-%d"))
             
-        ttl_timestamp = int(obs_timestamp + (30 * 24 * 60 * 60))  # Add 30 days in seconds. TTL is in epoch time.
+        ttl_timestamp = int(obs_timestamp + (14 * 24 * 60 * 60))  # Add 14 days in seconds. TTL is in epoch time.
         entry['ttl'] = ttl_timestamp
 
         data_with_ttl.append(entry)
