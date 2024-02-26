@@ -18,14 +18,14 @@ resource "aws_lambda_function" "recent_observations" {
         depends_on = [ aws_s3_object.lambda_zip ]
 }
 
-resource "aws_cloudwatch_event_rule" "every_minute" {
-        name = "every-minute-rule"
-        description = "Trigger every minute"
-        schedule_expression = "rate(1 minute)"
+resource "aws_cloudwatch_event_rule" "every_minute_daytime" {
+        name = "every-minute-daytime-rule"
+        description = "Trigger every minute of every hour between 8am and 8pm"
+        schedule_expression = "cron(0/1 8-19 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target" {
-        rule = aws_cloudwatch_event_rule.every_minute.name
+        rule = aws_cloudwatch_event_rule.every_minute_daytime.name
         target_id = "SendToLambda"
         arn = aws_lambda_function.recent_observations.arn
 }
@@ -35,5 +35,5 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.recent_observations.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.every_minute.arn
+  source_arn    = aws_cloudwatch_event_rule.every_minute_daytime.arn
 }
