@@ -20,8 +20,8 @@ resource "aws_lambda_function" "recent_observations" {
 
 resource "aws_cloudwatch_event_rule" "every_minute_daytime" {
         name = "every-minute-daytime-rule"
-        description = "Trigger every minute of every hour between 7am and 7pm local"
-        schedule_expression = "cron(0/1 12-23 * * ? *)"
+        description = "Trigger every five minutes of every hour between 7am and 7pm local"
+        schedule_expression = "cron(0/5 12-23 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target" {
