@@ -1,12 +1,12 @@
-name: Deploy Docker Image to AWS ECR Public
+name: Deploy Streamlit to ECS EC2
 
 on:
   push:
     branches:
-      - main  # Trigger the workflow on push events to the main branch, adjust as necessary.
+      - main  
 
 jobs:
-  build-and-push-to-ecr-public:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
