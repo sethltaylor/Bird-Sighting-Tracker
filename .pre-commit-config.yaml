@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.2.2
+    hooks:
+      # Run the linter.
+      - id: ruff
+        types_or: [ python, pyi, jupyter ]
+        exclude: '^src/(?!recent_observations_lambda\.py$).*$'
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [ python, pyi, jupyter ]
+        exclude: '^src/(?!recent_observations_lambda\.py$).*$'
