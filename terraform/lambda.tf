@@ -14,18 +14,18 @@ resource "aws_lambda_function" "recent_observations" {
         role          = aws_iam_role.lambda_execution_role.arn
         runtime       = "python3.10"
         handler       = "recent_observations_lambda.lambda_handler"
-        timeout       = 600
+        timeout       = 900
         depends_on = [ aws_s3_object.lambda_zip ]
 }
 
-resource "aws_cloudwatch_event_rule" "every_minute_daytime" {
-        name = "every-minute-daytime-rule"
+resource "aws_cloudwatch_event_rule" "every_five_minute_daytime" {
+        name = "every-five-minutes-daytime-rule"
         description = "Trigger every five minutes of every hour between 7am and 7pm local"
         schedule_expression = "cron(0/5 12-23 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target" {
-        rule = aws_cloudwatch_event_rule.every_minute_daytime.name
+        rule = aws_cloudwatch_event_rule.every_five_minute_daytime.name
         target_id = "SendToLambda"
         arn = aws_lambda_function.recent_observations.arn
 }
@@ -35,5 +35,5 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.recent_observations.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.every_minute_daytime.arn
+  source_arn    = aws_cloudwatch_event_rule.every_five_minute_daytime.arn
 }

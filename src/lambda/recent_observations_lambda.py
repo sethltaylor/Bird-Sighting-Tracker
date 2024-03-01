@@ -1,11 +1,9 @@
 import requests
 import boto3
 import time
-import random
 import concurrent.futures
 from io import StringIO
 import csv
-from botocore.exceptions import ClientError
 
 def api_setup():
 
@@ -131,42 +129,25 @@ def connect_to_table():
 def batch_write_obs(data: list, table) -> None:
     """Function to batch write items to the DDB table, which is more efficient from a read/write perspective than just put_item"""
 
-    keys_to_include = ['speciesCode', 'comName', 'sciName', 'locId', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'subId', 'ttl']
+    keys_to_include = ['comName', 'sciName', 'locName', 'obsDt', 'howMany', 'lat', 'lng', 'subId', 'ttl']
 
-    attempts = 0
-    max_attempts = 5
-    backoff_time = 1
+    with table.batch_writer() as writer:
+        for item in data:
+            dynamo_item = {}
 
-    while attempts < max_attempts:
-        try:
-            with table.batch_writer() as writer:
-                for item in data:
-                    dynamo_item = {}
+        # Iterate through the keys and add them to the dynamo_item if they exist
+            for key in keys_to_include:
+                if key in item:
+                # Convert lat and lng to strings
+                    value = str(item[key]) if key in ['lat', 'lng'] else item[key]
+                    dynamo_item[key] = value
 
-                # Iterate through the keys and add them to the dynamo_item if they exist
-                    for key in keys_to_include:
-                        if key in item:
-                        # Convert lat and lng to strings
-                            value = str(item[key]) if key in ['lat', 'lng'] else item[key]
-                            dynamo_item[key] = value
-
-                # Write the item to the DDB table 
-                    writer.put_item(
-                        Item=dynamo_item
-                    )
-                
-                print(f"Wrote {len(data)} items to table.")
-        except ClientError as e:
-            if e.response['Error']['Code'] == "ProvisionedThroughputExceededException":
-                    print(f"Throughput exceeded, backing off for {backoff_time} seconds.")
-                    time.sleep(backoff_time + random.uniform(0,0.1))
-                    backoff_time *=2
-                    attempts += 1
-                
-            else:
-                print(f"Failed after {max_attempts} attempts.")
-                raise e
-
+        # Write the item to the DDB table 
+            writer.put_item(
+                Item=dynamo_item
+            )
+        
+        print(f"Wrote {len(data)} items to table.")
 
 def lambda_handler(event, context):
     regions = get_regions('subnational2', ['US-VA', 'US-MD', 'US-DC'])
