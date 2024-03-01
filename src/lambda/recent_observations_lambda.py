@@ -1,11 +1,9 @@
 import requests
 import boto3
 import time
-import random
 import concurrent.futures
 from io import StringIO
 import csv
-from botocore.exceptions import ClientError
 
 def api_setup():
 
