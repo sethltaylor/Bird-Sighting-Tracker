@@ -3,8 +3,8 @@ resource "aws_dynamodb_table" "recent_observation_table" {
     billing_mode = "PROVISIONED"
     read_capacity = var.recent_observation_table_read_capacity
     write_capacity = var.recent_observation_table_write_capacity
-    hash_key = "subId"
-    range_key = "comName"
+    hash_key = "comName"
+    range_key = "subId"
 
     attribute{
         name = "subId"
