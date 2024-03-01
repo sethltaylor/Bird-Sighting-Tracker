@@ -12,7 +12,7 @@ resource "aws_ecs_task_definition" "bird_tracker_task" {
     container_definitions = jsonencode([
         {
             name = "bird-tracker"
-            image = "${aws_ecrpublic_repository.bird_tracker_repo.repository_uri}"
+            image = "${aws_ecrpublic_repository.bird_tracker_repo.repository_uri}:latest"
             cpu = 700
             memory = 700
             essential = true

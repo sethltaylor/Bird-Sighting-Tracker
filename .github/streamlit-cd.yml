@@ -1,0 +1,41 @@
+name: Deploy Docker Image to AWS ECR Public
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow on push events to the main branch, adjust as necessary.
+
+jobs:
+  build-and-push-to-ecr-public:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login to Amazon ECR Public
+      run: |
+        aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin public.ecr.aws/${{ secrets.ECR_PUBLIC_REGISTRY_ALIAS }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t bird-tracker-repo ./app
+
+    - name: Tag the Docker image for ECR Public
+      run: |
+        docker tag bird-tracker-repo:latest public.ecr.aws/${{ secrets.ECR_PUBLIC_REGISTRY_ALIAS }}/bird-tracker-repo:latest
+
+    - name: Push the Docker image to ECR Public
+      run: |
+        docker push public.ecr.aws/${{ secrets.ECR_PUBLIC_REGISTRY_ALIAS }}/bird-tracker-repo:latest
+
+    - name: Force new deployment
+      run: |
+        aws ecs update-service --cluster bird-tracker-cluster --service bird-tracker-service --force-new-deployment

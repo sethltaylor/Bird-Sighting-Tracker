@@ -45,6 +45,7 @@ def fetch_common_names(bucket_name, file_name):
 # Add sidebar for data filter selection
 with st.sidebar:
     st.sidebar.title("Inputs for Mapping")
+
     common_names = fetch_common_names(
         "recent-observations-keys", "recent_observation_keys.csv"
     )
@@ -58,6 +59,7 @@ with st.sidebar:
         value=pd.to_datetime("today") - pd.Timedelta(days=14),
     )
     st.caption("Data is available for the past 14 days.")
+
     end_date_selection = st.date_input(
         "End Date for Sightings Search", value=pd.to_datetime("today")
     )
@@ -69,9 +71,6 @@ with st.sidebar:
     # Setting end date to be the latest value in the day and start date to be the earliest time in the day to support intra-day querying.
     start_datetime = datetime.combine(start_date_selection, datetime.min.time())
     end_datetime = datetime.combine(end_date_selection, datetime.max.time())
-
-    # start_date_str = start_datetime.strftime('%Y-%m-%d %H:%M')
-    # end_date_str = end_datetime.strftime('%Y-%m-%d %H:%M')
 
 # Add tabs
 
@@ -94,9 +93,11 @@ with tab1:
             ]
 
             filtered_df = filtered_df.astype({"lng": "float", "lat": "float"})
+
             filtered_df["howMany"] = pd.to_numeric(
                 filtered_df["howMany"], errors="coerce"
             )
+
             filtered_df["howMany"].fillna(1, inplace=True)
 
             # Create mapping dictionary
