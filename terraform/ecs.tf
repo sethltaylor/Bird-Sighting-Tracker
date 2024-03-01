@@ -41,6 +41,8 @@ resource "aws_ecs_service" "bird_tracker_service" {
     task_definition = aws_ecs_task_definition.bird_tracker_task.arn
     launch_type = "EC2"
     desired_count = 1
+    deployment_minimum_healthy_percent = 0
+    deployment_maximum_percent = 100
 
     load_balancer {
       target_group_arn = aws_alb_target_group.target_group.arn

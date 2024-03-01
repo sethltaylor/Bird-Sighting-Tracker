@@ -11,6 +11,7 @@ resource "aws_alb_target_group" "target_group" {
     protocol = "HTTP"
     target_type = "instance"
     vpc_id = aws_vpc.main.id
+    deregistration_delay = 5
 }
 
 resource "aws_lb_listener" "listener" {
