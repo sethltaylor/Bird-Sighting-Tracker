@@ -36,7 +36,7 @@ jobs:
     - name: Lint with ruff
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        ruff ./app ./src/lambda/recent_observations_lambda.py --max-line-length 127
+        ruff ./app ./src/lambda/recent_observations_lambda.py --line-length=100
     - name: Test with pytest
       env:
         EBIRD_API_KEY: ${{ secrets.EBIRD_API_KEY }}
