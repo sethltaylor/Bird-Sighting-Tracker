@@ -5,9 +5,11 @@
 - [CI/CD](#continuous-integrationcontinuous-deployment)
 
 ## Overview
-This repository contains the code to build and deploy a Streamlit web app tracking bird sightings in the DMV area. Bird sightings are extracted from the [ebird API](https://documenter.getpostman.com/view/664302/S1ENwy59), a project of the Cornell Lab of Ornithology. The web application and associated backend services are hosted on AWS and continuous deployment is handled via Github Actions. Sightings are represented geo-spatially in the web app. Data on bird sightings is updated every five minutes and is stored for fourteen days. 
+This repository contains the code to build and deploy a Streamlit web app tracking bird sightings in the DMV area. Bird sightings are extracted from the [ebird API](https://documenter.getpostman.com/view/664302/S1ENwy59), a project of the Cornell Lab of Ornithology. The web application and associated backend services are hosted on AWS and continuous deployment is handled via Github Actions. Sightings are represented geospatially in the web app. Data on bird sightings is updated every five minutes and is stored for fourteen days. 
 
 The Streamlit web app is located here: [Streamlit App](https://bird-sightings.sethltaylor.dev/). 
+
+This app will be periodically updated with new features to continue practicing data engineering skills. 
 
 ## Tech Stack
 - [Streamlit](https://streamlit.io/): Web app framework used for visualizing the bird sightings. 
